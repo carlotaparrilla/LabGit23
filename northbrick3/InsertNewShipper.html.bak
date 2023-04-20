@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html>
+	<body>
+		<form action = "InsertShipper" method = "GET">
+
+
+		<table>
+		<tr>
+		<td>Company Name</td> 
+		<td><input type="text" name="companyName" ></td><br>
+		</tr>
+
+		<tr>
+		<td>Phone</td> 
+		<td><input type="text" name="phone" ></td><br>
+		</tr>
+
+		<tr>
+		<td> </td>
+		<td align="center"><input type="submit" value = "Submit"></td>
+		</tr>
+
+		</table>
+		</form>
+	</body>
+</html>

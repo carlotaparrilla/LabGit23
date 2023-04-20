@@ -1,0 +1,147 @@
+import java.util.Vector;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class SupplierData {
+    int    supplierId;
+    String contactName;
+    String city;
+	String country;
+
+
+	SupplierData (int supplierId, String contactName, String city) { // constructor (nombre igual a la clase)
+        this.supplierId    = supplierId; // referirte a los que estan arriba y lo igualas a lo que le ingresas.
+        this.contactName  = contactName;
+        this.city = city;
+    }
+	
+	SupplierData (int supplierId, String contactName, String city, String country) { // constructor (nombre igual a la clase)
+        this.supplierId    = supplierId; // referirte a los que estan arriba y lo igualas a lo que le ingresas.
+        this.contactName  = contactName;
+        this.city = city;
+		this.country=country;
+
+    }
+	
+	
+	
+	
+	public static Vector<SupplierData> getSuppliersList(Connection connection, String pais){
+        Vector<SupplierData> vec = new Vector<SupplierData>();
+//definir el sql
+        String sql = "Select SupplierID, ContactName, City FROM Suppliers";
+		sql += " WHERE Suppliers.Country=?";
+        System.out.println("getSuppliersList: " + sql); // verificar lo que hago
+		
+        try { // para poder detectar un error. TRY Y CATCH SIEMPRE ES IGUAL
+            PreparedStatement pstmt=connection.prepareStatement(sql); // mas seguro para eviatr hackeos
+			pstmt.setString(1, pais); // lo que antes se hacia con el odcb
+            ResultSet result = pstmt.executeQuery(); 
+            
+			while(result.next()) {
+				//Utilizamos el constructor de Supplier que necesita (int supplierId, String contactName, String city)
+                SupplierData suppli = new SupplierData( // siempre que creas un tipo de variable pones new por delante
+                    Integer.parseInt(result.getString("SupplierId")),
+                    result.getString("ContactName"),
+                    result.getString("City")
+                );
+                vec.addElement(suppli);
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getSuppliersList: " + sql + " Exception: " + e);
+        }
+        return vec;
+    }
+	
+	//vamos a crear un metodo que nos devuelva UN supplier (Suppliers), cuando le ingresemos un connection
+     //y un id (Connection connection, int id)
+	 
+	 
+	public static SupplierData getSuppliersEdit(Connection connection, int id) {
+		SupplierData supplier = null;
+		String sql = "Select SupplierID, ContactName, City, Country FROM Suppliers";
+		sql += " WHERE Suppliers.SupplierID=?";
+		System.out.println("getSuppliersEdit: " + sql);
+		try {
+			// comunicacion con la BBDD
+			PreparedStatement pstmt=connection.prepareStatement(sql); // mas seguro para eviatr hackeos y por el ?
+			pstmt.setInt(1, id);
+			ResultSet result = pstmt.executeQuery();
+			
+			// Con este while vamos a ir recorriendo linea a linea la matriz Resultset que nos devuelve el sql y vamo a crear UN Suppliers con los valores de las columnas 
+            
+			while(result.next()) {
+				supplier = new SupplierData(
+					Integer.parseInt(result.getString("SupplierId")),
+					result.getString("ContactName"),
+					result.getString("City"),
+					result.getString("Country")
+				);
+			}
+			
+		}
+		catch(SQLException e) {
+			e.printStackTrace();
+			System.out.println("Error in getSupplierList: " + sql + " Exception: " + e);
+		}
+		return supplier;
+	}
+	
+	
+	public static int metodoUpdate(Connection connection, SupplierData supplier) {
+		String sql ="UPDATE Suppliers ";
+			sql+= "SET ContactName = ?, City = ?, Country= ?";
+			sql+= " WHERE SupplierID = ?";
+			System.out.println("metodoUpdate: " + sql);
+			int n = 0;
+		try {
+			
+			PreparedStatement stmtUpdate= connection.prepareStatement(sql);
+			stmtUpdate.setString(1,supplier.contactName);
+			stmtUpdate.setString(2,supplier.city);
+			stmtUpdate.setString(3,supplier.country);
+			stmtUpdate.setInt(4,supplier.supplierId);
+			// al se run update se guarda en un int n
+			n = stmtUpdate.executeUpdate();
+			stmtUpdate.close();
+			
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.out.println("Error in metodoUpdate: " + sql + " Exception: " + e);
+		}
+			return n;
+	}
+
+	public static int insertSupplier(Connection connection, SupplierData supplier) {
+		String sql ="INSERT INTO Suppliers (ContactName, City, Country, CompanyName, ContactTitle) "
+            + "VALUES (?, ?, ?, ?, ?)";
+			System.out.println("insertSupplier: " + sql);
+			int n = 0;
+			
+		try {
+			
+			PreparedStatement stmtUpdate= connection.prepareStatement(sql);
+			stmtUpdate.setString(1,supplier.contactName);
+			stmtUpdate.setString(2,supplier.city);
+			stmtUpdate.setString(3,supplier.country);
+			stmtUpdate.setString(4,"Mercadona");
+			stmtUpdate.setString(5,"Ventas manager");
+			// al se run update se guarda en un int n
+			n = stmtUpdate.executeUpdate();
+			stmtUpdate.close();
+			
+		} catch(SQLException e) {
+			e.printStackTrace();
+			System.out.println("Error in metodoUpdate: " + sql + " Exception: " + e);
+		}
+			return n;
+	}
+
+	
+	
+	
+}

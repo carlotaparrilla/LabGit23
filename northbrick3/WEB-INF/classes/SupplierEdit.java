@@ -1,0 +1,62 @@
+import java.io.*;
+import java.util.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.sql.Connection;
+
+@SuppressWarnings("serial")
+public class SupplierEdit extends HttpServlet {
+    Connection connection;
+
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        connection = ConnectionUtils.getConnection(config); // creamos la conexión con el database
+    }
+
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException  {
+        res.setContentType("text/html");
+        PrintWriter toClient = res.getWriter();
+		
+		// lo pasamos a int EL GET PARAMETER ES PARA OBTENER EL NUMERO DEL ID PARA LA URL
+		// EL GET PARAMETER FUNCIONA CON STRINGS
+		// EL "id" HACE REFERENCIA A LO DE LA URL y viene del ctaegoriList de aqui: (linea 32) toClient.println("<td><a href='CategoryEdit?id=" + product.categoryId + "'>Edit</a></td>");
+		int idStr = Integer.parseInt(req.getParameter("supplierId")); // reading el value del id=10124 (en la barra de navegación de la web), para enseñar la información de ese producto específico
+		
+		
+		
+		//para seleccionar solo 1
+		SupplierData supplier = SupplierData.getSuppliersEdit(connection, idStr);
+		
+        toClient.println(Utils.header("Supplier Form"));
+		
+		// FROM CATEGORY EDIT ME VOY A CATEGORYUPDATE PARA ENVIAR LA INFO DE UN SERVLET A OTR
+		// para enviar informacion de un servleta a otro usamos el form
+        toClient.println("<form  action = 'SupplierUpdate' method='GET'>"); 
+        toClient.println("<table border='1'>"); 
+        
+		
+		
+		toClient.println("<tr><td>Id</td>");
+        int idname = supplier.supplierId;
+        toClient.println("<td><input name='supplierId' value='" + idname + "'></td></tr>");
+        
+		toClient.println("<tr><td>Name</td>");
+        String name = supplier.contactName;
+        toClient.println("<td><input name='contactName' value='" + name + "'></td></tr>");
+        
+        toClient.println("<tr><td>City</td>");
+        String cityname = supplier.city;
+        toClient.println("<td><input name='city' value='" + cityname + "'></td></tr>");
+		
+		toClient.println("<tr><td>Country</td>");
+        String countryname = supplier.country;
+        toClient.println("<td><input name='country' value='" + countryname + "'></td></tr>");
+
+        toClient.println("</tr>");
+        toClient.println("</table>");
+        toClient.println("<input type='submit'>");
+        toClient.println("</form>");
+        toClient.println(Utils.footer("Supplier Form"));
+        toClient.close();
+    }
+}

@@ -1,0 +1,85 @@
+import java.util.Vector;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class CategoryData { //clase categorydata es un tipo de varible sin mas. las variable de tipo ctaegorydta van a tener estos tres campos/caracteristicas
+    int    categoryId;
+    String categoryName;
+    String categoryDescription;
+
+
+    //constructor pq se llama igual que la clase lo que hace es llamar a las variables de arriba igual en ell metodo que en el costructor
+    CategoryData (int    categoryId, String categoryName, String categoryDescription) {
+        this.categoryId    = categoryId;
+        this.categoryName  = categoryName;
+        this.categoryDescription = categoryDescription;
+
+    }
+
+	//metodo que la variable de retorno es un vector de tipo categorydata y de nombre getproductlist y sus variable son connection que es una variable de tipo conexion
+	//<> entre esto va el tipo de variable que quieres devolver
+    public static Vector<CategoryData> getProductList(Connection connection) {
+		//declarara el vector
+        Vector<CategoryData> vec = new Vector<CategoryData>();
+		//definir el sql
+        String sql = "Select CategoryID, CategoryName, Description FROM Categories";
+        System.out.println("getProductList: " + sql);
+        try { //para poder poner el catch qeu srive para las excepciones para que te de los erroes
+            //sustitucion del odcb
+			Statement statement=connection.createStatement();
+			//tipos de variables que te devuelve el sql siemore que haya sql
+			//execute para coger info del sq. el update para editar
+			//result todo como string y por eso hay que hacer el integer.parseInt
+            ResultSet result = statement.executeQuery(sql);
+            while(result.next()) { //recorrer
+			//al crear una nueva varible tuya hayq ue poner el new por delante
+                CategoryData product = new CategoryData(
+				//llamando al constructor para rellenar en product las tres caracteristicas
+                    Integer.parseInt(result.getString("categoryId")),
+					result.getString("categoryName"),
+					result.getString("categoryDescription")
+                    
+                    
+                );
+				//meterlo en el vector y olvidarte
+                vec.addElement(product);
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getProductList: " + sql + " Exception: " + e);
+        }
+        return vec;
+    }
+	//quieres que el link te lleve a los PRODUCTOS  de ESA CATEGORiA vas a relacioanrlas
+    public static Vector<ProductData> getCategoryProductList(Connection connection, String id) {
+        Vector<ProductData> vec = new Vector<ProductData>();
+        String sql = "Select ProductId, ProductName, Products.SupplierId as SupplierId, CompanyName, UnitPrice FROM Products, Suppliers";
+        //IMPORTANTE cojo todos los productos d ela categorái qeu me interesa
+		sql += " WHERE Products.Category = Categories.CategoryName AND CategoryID=?";
+        System.out.println("getProductList: " + sql);
+        try {
+			//si los haces con ? hay que acceder con este tipo de varible PreparedStatement
+            PreparedStatement pstmt=connection.prepareStatement(sql);
+			// pq setInt pq el id es un int. El 1 es desde el primer signo de interrogacion
+            pstmt.setInt(1, Integer.parseInt(id));
+            ResultSet result = pstmt.executeQuery();
+            while(result.next()) {
+                ProductData product = new ProductData(
+                    result.getString("ProductId"),
+                    result.getString("ProductName"),
+                    Integer.parseInt(result.getString("SupplierId")),
+                    result.getString("CompanyName"),
+                    Float.parseFloat(result.getString("UnitPrice"))
+                );
+                vec.addElement(product);
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in getProductList: " + sql + " Exception: " + e);
+        }
+        return vec;
+    }
+}
