@@ -176,6 +176,27 @@ public class OrderData {
         }
         return n;
     }
+	
+	public static int insertOrderDetail2(Connection connection, OrderDetailData orderDetail) {
+        String sql ="INSERT INTO [Order Details] (OrderID, ProductID, UnitPrice, Quantity, Discount) "
+            + "VALUES (?, ?, ?, ?, ?)";
+        System.out.println("updateProduct: " + sql);
+        int n = 0;
+        try {
+            PreparedStatement stmtUpdate= connection.prepareStatement(sql);
+            stmtUpdate.setInt(1,orderDetail.orderId);
+            stmtUpdate.setString(2,orderDetail.productId);
+            stmtUpdate.setFloat(3,orderDetail.unitPrice);
+            stmtUpdate.setFloat(4,orderDetail.quantity);
+            stmtUpdate.setFloat(5,orderDetail.discount);
+            n = stmtUpdate.executeUpdate();
+            stmtUpdate.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error in insertOrderDetail: " + sql + " Exception: " + e);
+        }
+        return n;
+    }
 
 }
 
